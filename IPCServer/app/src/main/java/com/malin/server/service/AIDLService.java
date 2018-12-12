@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 可以将app/libs下的aidl文件拷贝到app/src/main/aidl/com/malin/client/目录下,
+ * 同时将该目录下的java文件全部删除
+ * 使用编译过程中自动生成的java文件
+ * <p>
  * 服务端的AIDLService.java
  * https://blog.csdn.net/luoyanglizi/article/details/51980630
  */

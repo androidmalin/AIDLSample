@@ -10,11 +10,15 @@ import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import java.util.List;
 
 /**
+ * 可以将app/libs下的aidl文件拷贝到app/src/main/aidl/com/malin/client/目录下,
+ * 同时将该目录下的java文件全部删除
+ * 使用编译过程中自动生成的java文件
+ * <p>
  * 客户端的AIDLActivity.java
  * https://blog.csdn.net/luoyanglizi/article/details/51980630
  */
@@ -29,11 +33,13 @@ public class ClientActivity extends AppCompatActivity {
 
     //包含Book对象的list
     private List<Book> mBooks;
+    private TextView mTVContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_aidl);
+        mTVContent = findViewById(R.id.tv_content);
     }
 
     /**
@@ -45,7 +51,7 @@ public class ClientActivity extends AppCompatActivity {
         //如果与服务端的连接处于未连接状态，则尝试连接
         if (!mBound) {
             attemptToBindService();
-            Toast.makeText(this, "当前与服务端处于未连接状态，正在尝试重连，请稍后再试", Toast.LENGTH_SHORT).show();
+            mTVContent.setText("当前与服务端处于未连接状态，正在尝试重连，请稍后再试");
             return;
         }
         if (mBookManager == null) return;
@@ -56,6 +62,7 @@ public class ClientActivity extends AppCompatActivity {
         try {
             mBookManager.addBook(book);
             Log.e(TAG, book.toString());
+            mTVContent.setText(book.toString());
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -92,6 +99,7 @@ public class ClientActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.e(TAG, "service connected");
+            mTVContent.setText("service connected");
             mBookManager = BookManager.Stub.asInterface(service);
             mBound = true;
 
@@ -99,6 +107,7 @@ public class ClientActivity extends AppCompatActivity {
                 try {
                     mBooks = mBookManager.getBooks();
                     Log.e(TAG, mBooks.toString());
+                    mTVContent.setText(mBooks.toString());
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -108,6 +117,7 @@ public class ClientActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.e(TAG, "service disconnected");
+            mTVContent.setText("service disconnected");
             mBound = false;
         }
     };
