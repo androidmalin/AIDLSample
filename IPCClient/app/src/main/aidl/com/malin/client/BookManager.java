@@ -5,14 +5,25 @@
  */
 package com.malin.client;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 
 public interface BookManager extends android.os.IInterface {
+
+    List<Book> getBooks() throws android.os.RemoteException;
+
+    void addBook(com.malin.client.Book book) throws android.os.RemoteException;
+
+
     /**
      * Local-side IPC implementation stub class.
      */
-    public static abstract class Stub extends android.os.Binder implements com.malin.client.BookManager {
+    abstract class Stub extends android.os.Binder implements com.malin.client.BookManager {
         private static final String DESCRIPTOR = "com.malin.client.BookManager";
+
+        static final int TRANSACTION_getBooks = android.os.IBinder.FIRST_CALL_TRANSACTION;
+        static final int TRANSACTION_addBook = android.os.IBinder.FIRST_CALL_TRANSACTION + 1;
 
         /**
          * Construct the stub at attach it to the interface.
@@ -26,7 +37,7 @@ public interface BookManager extends android.os.IInterface {
          * generating a proxy if needed.
          */
         public static com.malin.client.BookManager asInterface(android.os.IBinder iBinder) {
-            if ((iBinder == null)) {
+            if (iBinder == null) {
                 return null;
             }
             android.os.IInterface iin = iBinder.queryLocalInterface(DESCRIPTOR);
@@ -42,7 +53,7 @@ public interface BookManager extends android.os.IInterface {
         }
 
         @Override
-        public boolean onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
+        public boolean onTransact(int code, @NonNull android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
             String descriptor = DESCRIPTOR;
             switch (code) {
                 case INTERFACE_TRANSACTION: {
@@ -81,6 +92,7 @@ public interface BookManager extends android.os.IInterface {
         }
 
         private static class Proxy implements com.malin.client.BookManager {
+
             private android.os.IBinder mRemote;
 
             Proxy(android.os.IBinder remote) {
@@ -119,7 +131,7 @@ public interface BookManager extends android.os.IInterface {
                 android.os.Parcel _reply = android.os.Parcel.obtain();
                 try {
                     _data.writeInterfaceToken(DESCRIPTOR);
-                    if ((book != null)) {
+                    if (book != null) {
                         _data.writeInt(1);
                         book.writeToParcel(_data, 0);
                     } else {
@@ -127,7 +139,7 @@ public interface BookManager extends android.os.IInterface {
                     }
                     mRemote.transact(Stub.TRANSACTION_addBook, _data, _reply, 0);
                     _reply.readException();
-                    if ((0 != _reply.readInt())) {
+                    if (0 != _reply.readInt() && book != null) {
                         book.readFromParcel(_reply);
                     }
                 } finally {
@@ -137,11 +149,7 @@ public interface BookManager extends android.os.IInterface {
             }
         }
 
-        static final int TRANSACTION_getBooks = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
-        static final int TRANSACTION_addBook = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+
     }
 
-    public List<Book> getBooks() throws android.os.RemoteException;
-
-    public void addBook(com.malin.client.Book book) throws android.os.RemoteException;
 }

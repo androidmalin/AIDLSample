@@ -1,5 +1,6 @@
 package com.malin.client;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +23,7 @@ import java.util.List;
  * 客户端的AIDLActivity.java
  * https://blog.csdn.net/luoyanglizi/article/details/51980630
  */
+@SuppressLint("SetTextI18n")
 public class ClientActivity extends AppCompatActivity {
 
     private static final String TAG = "AIClient";
@@ -95,14 +97,19 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 这是实现客户端与服务端通信的一个关键类。
+     * 要想实现它，就必须重写两个回调方法：onServiceConnected()以及onServiceDisconnected()，
+     * 而我们可以通过这两个回调方法得到服务端里面的IBinder对象，从而达到通信的目的
+     */
     private ServiceConnection mServiceConnection = new ServiceConnection() {
+
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
             Log.e(TAG, "service connected");
             mTVContent.setText("service connected");
-            mBookManager = BookManager.Stub.asInterface(service);
+            mBookManager = BookManager.Stub.asInterface(iBinder);
             mBound = true;
-
             if (mBookManager != null) {
                 try {
                     mBooks = mBookManager.getBooks();
