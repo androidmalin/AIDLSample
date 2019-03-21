@@ -91,6 +91,11 @@ public interface BookManager extends android.os.IInterface {
             }
         }
 
+        /**
+         * 1，生成 _data 和 _reply 数据流，并向 _data 中存入客户端的数据。
+         * 2，通过 transact() 方法将它们传递给服务端，并请求服务端调用指定方法。
+         * 3，接收 _reply 数据流，并从中取出服务端传回来的数据。
+         */
         private static class Proxy implements com.malin.client.BookManager {
 
             private android.os.IBinder mRemote;
@@ -110,13 +115,19 @@ public interface BookManager extends android.os.IInterface {
 
             @Override
             public List<Book> getBooks() throws android.os.RemoteException {
+                //Parcel 是一个用来存放和读取数据的容器。我们可以用它来进行客户端和服务端之间的数据传输，当然，它能传输的只能是可序列化的数据
+                //_data用来存储流向服务端的数据流，
+                //_reply用来存储服务端流回客户端的数据流
                 android.os.Parcel _data = android.os.Parcel.obtain();
                 android.os.Parcel _reply = android.os.Parcel.obtain();
                 List<Book> _result;
                 try {
                     _data.writeInterfaceToken(DESCRIPTOR);
-                    mRemote.transact(Stub.TRANSACTION_getBooks, _data, _reply, 0);
+                    //transact():这是客户端和服务端通信的核心方法。调用这个方法之后，客户端将会挂起当前线程，
+                    //等候服务端执行完相关任务后通知并接收返回的 _reply 数据流
+                    mRemote.transact(Stub.TRANSACTION_getBooks, _data, _reply, 0);// 0 表示数据可以双向流通
                     _reply.readException();
+                    //从_reply中取出服务端执行方法的结果
                     _result = _reply.createTypedArrayList(com.malin.client.Book.CREATOR);
                 } finally {
                     _reply.recycle();

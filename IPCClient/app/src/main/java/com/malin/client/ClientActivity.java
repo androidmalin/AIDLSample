@@ -22,6 +22,8 @@ import java.util.List;
  * <p>
  * 客户端的AIDLActivity.java
  * https://blog.csdn.net/luoyanglizi/article/details/51980630
+ * <p>
+ * 首先建立连接，然后在 ServiceConnection 里面获取 BookManager 对象，接着通过它来调用服务端的方法
  */
 @SuppressLint("SetTextI18n")
 public class ClientActivity extends AppCompatActivity {
@@ -106,6 +108,12 @@ public class ClientActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
+
+            //iBinder的理解：BookManager.Stub.asInterface(iBinder)-->new com.malin.client.BookManager.Stub.Proxy(iBinder)-->IBinder mRemote--> mRemote.transact
+            // 通过用它调用的 transact() 方法，我们得以将客户端的数据和请求发送到服务端去。
+            // 从这个角度来看，这个 service 就像是服务端在客户端的代理一样——你想要找服务端？要传数据过去？行啊！你来找我，我给你把数据送过去——而
+            // BookManager.java 中的那个 Proxy 类，就只能沦为二级代理了，我们在外部通过它来调动 service 对象。
+
             Log.e(TAG, "service connected");
             mTVContent.setText("service connected");
             mBookManager = BookManager.Stub.asInterface(iBinder);
