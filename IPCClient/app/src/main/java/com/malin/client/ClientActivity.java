@@ -109,7 +109,11 @@ public class ClientActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
 
-            //iBinder的理解：BookManager.Stub.asInterface(iBinder)-->new com.malin.client.BookManager.Stub.Proxy(iBinder)-->IBinder mRemote--> mRemote.transact
+            //iBinder的理解：BookManager.Stub.asInterface(iBinder) iBinder为BinderProxy(Binder的内部类)-->new com.malin.client.BookManager.Stub.Proxy(iBinder)-->IBinder mRemote--> mRemote.transact
+            //-->BinderProxy--> native boolean transactNative();-->
+            //-->Client进程陷入内核态，Client调用getBooks()方法的线程挂起等待返回；
+            //-->驱动完成一系列的操作之后唤醒Server进程，调用了Server进程本地对象的onTransact函数（实际上由Server端线程池完成)
+
             // 通过用它调用的 transact() 方法，我们得以将客户端的数据和请求发送到服务端去。
             // 从这个角度来看，这个 service 就像是服务端在客户端的代理一样——你想要找服务端？要传数据过去？行啊！你来找我，我给你把数据送过去——而
             // BookManager.java 中的那个 Proxy 类，就只能沦为二级代理了，我们在外部通过它来调动 service 对象。

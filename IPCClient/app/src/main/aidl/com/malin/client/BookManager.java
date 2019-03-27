@@ -9,6 +9,9 @@ import android.support.annotation.NonNull;
 
 import java.util.List;
 
+/**
+ * IInterface代表的就是远程server对象具有什么能力。具体来说，就是aidl里面的接口
+ */
 public interface BookManager extends android.os.IInterface {
 
     List<Book> getBooks() throws android.os.RemoteException;
@@ -18,6 +21,10 @@ public interface BookManager extends android.os.IInterface {
 
     /**
      * Local-side IPC implementation stub class.
+     * Java层的Binder类，代表的其实就是Binder本地对象。
+     * Stub类 继承了Binder, 说明它是一个Binder本地对象，
+     * 它实现了IInterface接口，表明它具有远程Server承诺给Client的能力
+     * Stub是一个抽象类，具体的IInterface的相关实现需要我们手动完成，这里使用了策略模式。
      */
     abstract class Stub extends android.os.Binder implements com.malin.client.BookManager {
         private static final String DESCRIPTOR = "com.malin.client.BookManager";
@@ -35,6 +42,15 @@ public interface BookManager extends android.os.IInterface {
         /**
          * Cast an IBinder object into an com.malin.client.BookManager interface,
          * generating a proxy if needed.
+         * <p>
+         * 试着查找Binder本地对象，如果找到，说明Client和Server都在同一个进程，
+         * 这个参数直接就是本地对象，直接强制类型转换然后返回，
+         * <p>
+         * 如果找不到，说明是远程对象（处于另外一个进程）那么就需要创建一个Binder代理对象，
+         * 让这个Binder代理实现对于远程对象的访问。
+         * <p>
+         * 一般来说，如果是与一个远程Service对象进行通信，那么这里返回的一定是一个Binder代理对象，
+         * 这个IBinder参数的实际上是BinderProxy
          */
         public static com.malin.client.BookManager asInterface(android.os.IBinder iBinder) {
             if (iBinder == null) {
@@ -60,6 +76,11 @@ public interface BookManager extends android.os.IInterface {
                     reply.writeString(descriptor);
                     return true;
                 }
+                /*
+                 * 在Server进程里面，onTransact根据调用号（每个AIDL函数都有一个编号，在跨进程的时候，不会传递函数，而是传递编号指明调用哪个函数）调用相关函数；
+                 * 在这个例子里面，调用了Binder本地对象的getBooks方法；
+                 * 这个方法将结果返回给驱动，驱动唤醒挂起的Client进程里面的线程并将结果返回。于是一次跨进程调用就完成了
+                 */
                 case TRANSACTION_getBooks: {
                     data.enforceInterface(descriptor);
                     List<Book> _result = this.getBooks();
@@ -92,9 +113,8 @@ public interface BookManager extends android.os.IInterface {
         }
 
         /**
-         * 1，生成 _data 和 _reply 数据流，并向 _data 中存入客户端的数据。
-         * 2，通过 transact() 方法将它们传递给服务端，并请求服务端调用指定方法。
-         * 3，接收 _reply 数据流，并从中取出服务端传回来的数据。
+         * Binder代理对象
+         * 实现了IInterface并持有了IBinder引用
          */
         private static class Proxy implements com.malin.client.BookManager {
 
@@ -115,19 +135,13 @@ public interface BookManager extends android.os.IInterface {
 
             @Override
             public List<Book> getBooks() throws android.os.RemoteException {
-                //Parcel 是一个用来存放和读取数据的容器。我们可以用它来进行客户端和服务端之间的数据传输，当然，它能传输的只能是可序列化的数据
-                //_data用来存储流向服务端的数据流，
-                //_reply用来存储服务端流回客户端的数据流
                 android.os.Parcel _data = android.os.Parcel.obtain();
                 android.os.Parcel _reply = android.os.Parcel.obtain();
                 List<Book> _result;
                 try {
                     _data.writeInterfaceToken(DESCRIPTOR);
-                    //transact():这是客户端和服务端通信的核心方法。调用这个方法之后，客户端将会挂起当前线程，
-                    //等候服务端执行完相关任务后通知并接收返回的 _reply 数据流
-                    mRemote.transact(Stub.TRANSACTION_getBooks, _data, _reply, 0);// 0 表示数据可以双向流通
+                    mRemote.transact(Stub.TRANSACTION_getBooks, _data, _reply, 0);
                     _reply.readException();
-                    //从_reply中取出服务端执行方法的结果
                     _result = _reply.createTypedArrayList(com.malin.client.Book.CREATOR);
                 } finally {
                     _reply.recycle();
