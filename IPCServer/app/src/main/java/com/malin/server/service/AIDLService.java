@@ -3,8 +3,6 @@ package com.malin.server.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.Parcel;
-import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -30,8 +28,6 @@ public class AIDLService extends Service {
 
     public final String TAG = "AIDLService";
 
-    private static final String PACKAGE_ALLOW = "com.malin.client";
-
     //包含Book对象的list
     private List<Book> mBooks = new ArrayList<>();
 
@@ -40,6 +36,7 @@ public class AIDLService extends Service {
     private final BookManager.Stub mBookManager = new BookManager.Stub() {
         @Override
         public List<Book> getBooks() {
+            Log.d(TAG, TAG + "==>getBooks()");
             synchronized (this) {
                 Log.e(TAG, "invoking getBooks() method , now the list is : " + mBooks.toString());
                 if (mBooks != null) {
@@ -49,23 +46,9 @@ public class AIDLService extends Service {
             }
         }
 
-
-        @Override
-        public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
-            String packageName = null;
-            String[] packages = AIDLService.this.getPackageManager().getPackagesForUid(getCallingUid());
-            if (packages != null && packages.length > 0) {
-                packageName = packages[0];
-            }
-            Log.d(TAG, "onTransact: " + packageName);
-            if (!PACKAGE_ALLOW.equals(packageName)) {
-                return false;
-            }
-            return super.onTransact(code, data, reply, flags);
-        }
-
         @Override
         public void addBook(Book book) {
+            Log.d(TAG, TAG + "==>addBook()");
             synchronized (this) {
                 if (mBooks == null) {
                     mBooks = new ArrayList<>();
@@ -90,6 +73,7 @@ public class AIDLService extends Service {
      */
     @Override
     public void onCreate() {
+        Log.d(TAG, TAG + "==>onCreate()");
         Book book = new Book();
         book.setName("From Server Book");
         book.setPrice(28);
@@ -110,6 +94,7 @@ public class AIDLService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG, TAG + "==>onBind()");
         Log.e(TAG, String.format("on bind,intent = %s", intent.toString()));
         return mBookManager;
     }
@@ -120,11 +105,13 @@ public class AIDLService extends Service {
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, TAG + "==>onStartCommand()");
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, TAG + "==>onDestroy()");
     }
 }

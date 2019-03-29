@@ -26,32 +26,41 @@ import java.util.List;
  * 首先建立连接，然后在 ServiceConnection 里面获取 BookManager 对象，接着通过它来调用服务端的方法
  */
 @SuppressLint("SetTextI18n")
-public class ClientActivity extends AppCompatActivity {
+public class ClientActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "AIClient";
+
     //由AIDL文件生成的Java类
     private BookManager mBookManager = null;
 
     //标志当前与服务端连接状况的布尔值，false为未连接，true为连接中
     private boolean mBound = false;
 
-    //包含Book对象的list
-    private List<Book> mBooks;
     private TextView mTVContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_aidl);
+        initView();
+    }
+
+    private void initView() {
         mTVContent = findViewById(R.id.tv_content);
+        findViewById(R.id.btn_add_book).setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.btn_add_book) {
+            addBook();
+        }
     }
 
     /**
      * 按钮的点击事件，点击之后调用服务端的addBookIn方法
-     *
-     * @param view
      */
-    public void addBook(View view) {
+    public void addBook() {
         //如果与服务端的连接处于未连接状态，则尝试连接
         if (!mBound) {
             attemptToBindService();
@@ -82,22 +91,6 @@ public class ClientActivity extends AppCompatActivity {
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (!mBound) {
-            attemptToBindService();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mBound) {
-            unbindService(mServiceConnection);
-            mBound = false;
-        }
-    }
 
     /**
      * 这是实现客户端与服务端通信的一个关键类。
@@ -122,14 +115,14 @@ public class ClientActivity extends AppCompatActivity {
             mTVContent.setText("service connected");
             mBookManager = BookManager.Stub.asInterface(iBinder);
             mBound = true;
-            if (mBookManager != null) {
-                try {
-                    mBooks = mBookManager.getBooks();
-                    Log.e(TAG, mBooks.toString());
-                    mTVContent.setText(mBooks.toString());
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+            if (mBookManager == null) return;
+            try {
+                //包含Book对象的list
+                List<Book> books = mBookManager.getBooks();
+                Log.e(TAG, books.toString());
+                mTVContent.setText(books.toString());
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
 
@@ -140,4 +133,13 @@ public class ClientActivity extends AppCompatActivity {
             mBound = false;
         }
     };
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mBound) {
+            unbindService(mServiceConnection);
+            mBound = false;
+        }
+    }
 }

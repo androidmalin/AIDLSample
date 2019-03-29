@@ -5,25 +5,26 @@ import android.os.Parcelable;
 
 public class Book implements Parcelable {
 
-    public String getName() {
-        return name;
-    }
+    private String name;
+
+    private int price;
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public int getPrice() {
-        return price;
+    public String getName() {
+        return name;
     }
 
     public void setPrice(int price) {
         this.price = price;
     }
 
-    private String name;
 
-    private int price;
+    public int getPrice() {
+        return price;
+    }
 
     public Book() {
     }

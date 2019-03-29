@@ -7,17 +7,18 @@
     android:orientation="vertical"
     tools:context="com.malin.client.ClientActivity">
 
+
+    <Button
+        android:id="@+id/btn_add_book"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="addBookIn"
+        tools:ignore="HardcodedText" />
+
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/tv_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:onClick="addBook"
-        android:text="addBookIn"
-        tools:ignore="HardcodedText" />
 </LinearLayout>
