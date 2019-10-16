@@ -57,9 +57,10 @@ public class Book implements Parcelable {
     }
 
     /**
-     * 参数是一个Parcel,用它来存储与传输数据
+     * 而如果要支持为 out 或者 inout 的定向 tag 的话，还需要实现 readFromParcel() 方法;
+     * 而这个方法其实并没有在 Parcelable 接口里面，所以需要我们从头写;
      *
-     * @param dest dest
+     * @param dest 参数是一个Parcel,用它来存储与传输数据
      */
     public void readFromParcel(Parcel dest) {
         //注意，此处的读值顺序应当是和writeToParcel()方法中一致的

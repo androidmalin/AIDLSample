@@ -68,13 +68,6 @@ public interface BookManager extends android.os.IInterface {
             return this;
         }
 
-        /**
-         * 服务端的一般工作流程：
-         * <p>
-         * 1，获取客户端传过来的数据，根据方法 ID 执行相应操作。
-         * 2，将传过来的数据取出来，调用本地写好的对应方法。
-         * 3，将需要回传的数据写入 reply 流，传回客户端。
-         */
         @Override
         public boolean onTransact(int code, @NonNull android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
             String descriptor = DESCRIPTOR;
@@ -90,25 +83,25 @@ public interface BookManager extends android.os.IInterface {
                  */
                 case TRANSACTION_getBooks: {
                     data.enforceInterface(descriptor);
-                    //调用 this.getBooks() 方法，在这里开始执行具体的事务逻辑
-                    //result 列表为调用 getBooks() 方法的返回值
-                    //直接调用服务端这边的具体方法实现，然后获取返回值并将其写入 reply 流
                     List<Book> _result = this.getBooks();
                     reply.writeNoException();
-                    //将方法执行的结果写入 reply
                     reply.writeTypedList(_result);
                     return true;
                 }
                 case TRANSACTION_addBook: {
                     data.enforceInterface(descriptor);
                     com.malin.client.Book book;
+                    //从输入的data流中读取book数据，并将其赋值给book
                     if ((0 != data.readInt())) {
                         book = com.malin.client.Book.CREATOR.createFromParcel(data);
                     } else {
                         book = null;
                     }
+                    //在这里才是真正的开始执行实际的逻辑，调用服务端写好的实现
                     this.addBook(book);
                     reply.writeNoException();
+                    //在这里，book是方法的传入参数，故服务端的实现里对传参做出的任何修改，
+                    //都会在book中有所体现，将其写入reply流，就有了将这些修改传回客户端的前提
                     if ((book != null)) {
                         reply.writeInt(1);
                         book.writeToParcel(reply, android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
@@ -126,11 +119,6 @@ public interface BookManager extends android.os.IInterface {
         /**
          * Binder代理对象
          * 实现了IInterface并持有了IBinder引用
-         * <p>
-         * Proxy 类的方法里面一般的工作流程:
-         * 1，生成 _data 和 _reply 数据流，并向 _data 中存入客户端的数据。
-         * 2，通过 transact() 方法将它们传递给服务端，并请求服务端调用指定方法。
-         * 3，接收 _reply 数据流，并从中取出服务端传回来的数据。
          */
         private static class Proxy implements com.malin.client.BookManager {
 
@@ -151,21 +139,13 @@ public interface BookManager extends android.os.IInterface {
 
             @Override
             public List<Book> getBooks() throws android.os.RemoteException {
-                // _data用来存储流向服务端的数据流，
-                //_reply用来存储服务端流回客户端的数据流
                 android.os.Parcel _data = android.os.Parcel.obtain();
                 android.os.Parcel _reply = android.os.Parcel.obtain();
                 List<Book> _result;
                 try {
                     _data.writeInterfaceToken(DESCRIPTOR);
-
-                    //调用 transact() 方法将方法id和两个 Parcel 容器传过去,这是客户端和服务端通信的核心方法。
-                    //调用这个方法之后，客户端将会挂起当前线程，等候服务端执行完相关任务后通知并接收返回的 _reply 数据流
-                    //flags:IPC 的模式，为 0 表示数据可以双向流通，即 _reply 流可以正常的携带数据回来
                     mRemote.transact(Stub.TRANSACTION_getBooks, _data, _reply, 0);
                     _reply.readException();
-
-                    //从_reply中取出服务端执行方法的结果
                     _result = _reply.createTypedArrayList(com.malin.client.Book.CREATOR);
                 } finally {
                     _reply.recycle();
@@ -178,6 +158,8 @@ public interface BookManager extends android.os.IInterface {
             public void addBook(com.malin.client.Book book) throws android.os.RemoteException {
                 android.os.Parcel _data = android.os.Parcel.obtain();
                 android.os.Parcel _reply = android.os.Parcel.obtain();
+                // _data（包含从客户端流向服务端的book流），
+                // _reply（包含从服务端流向客户端的数据流）传入
                 try {
                     _data.writeInterfaceToken(DESCRIPTOR);
                     if (book != null) {
@@ -188,6 +170,7 @@ public interface BookManager extends android.os.IInterface {
                     }
                     mRemote.transact(Stub.TRANSACTION_addBook, _data, _reply, 0);
                     _reply.readException();
+                    //针对_reply的操作，并且将book赋值为_reply流中的数据
                     if (0 != _reply.readInt() && book != null) {
                         book.readFromParcel(_reply);
                     }

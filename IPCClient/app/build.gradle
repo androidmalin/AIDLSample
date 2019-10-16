@@ -20,6 +20,7 @@ android {
 
     sourceSets {
         main {
+            //把 java 代码的访问路径设置成了 java 包和 aidl 包，这样一来系统就会到 aidl 包里面去查找 java 文件
             java.srcDirs = ['src/main/java', 'src/main/aidl']
         }
     }

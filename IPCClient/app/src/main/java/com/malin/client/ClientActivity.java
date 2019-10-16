@@ -8,7 +8,9 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -24,6 +26,12 @@ import java.util.List;
  * https://blog.csdn.net/luoyanglizi/article/details/51980630
  * <p>
  * 首先建立连接，然后在 ServiceConnection 里面获取 BookManager 对象，接着通过它来调用服务端的方法
+ * <p>
+ * IXXX是AIDL接口类型定义逻辑方法
+ * XXXProxy是本地端代理对象，也是给应用操作的实际对象
+ * XXXNative/XXX$Stub是远端服务的中间者对象，主要用来处理应用发送过来的命令处理工作
+ * XXXService是最终的服务逻辑实现方法的地方，运行在远端进程中
+ * https://blog.csdn.net/jiangwei0910410003/article/details/52549333
  */
 @SuppressLint("SetTextI18n")
 public class ClientActivity extends AppCompatActivity implements View.OnClickListener {
@@ -88,6 +96,7 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
         Intent intent = new Intent();
         intent.setAction("com.malin.aidl");
         intent.setPackage("com.malin.server");
+        //bindService()方法的第三个参数是一个int值，它是一个指示绑定选项的标志，通常应该是 BIND_AUTO_CREATE，以便创建尚未激活的服务
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -99,6 +108,9 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
      */
     private ServiceConnection mServiceConnection = new ServiceConnection() {
 
+        /**
+         * 系统会调用该方法以传递服务端的onBind() 方法返回的 IBinder。
+         */
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
 
@@ -113,6 +125,7 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
 
             Log.e(TAG, "service connected");
             mTVContent.setText("service connected");
+            //本地端的中间者
             mBookManager = BookManager.Stub.asInterface(iBinder);
             mBound = true;
             if (mBookManager == null) return;
@@ -126,6 +139,10 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
 
+        /**
+         * Android系统会在与服务的连接意外中断时（例如当服务崩溃或被终止时）调用该方法。
+         * 当客户端取消绑定时，系统"绝对不会"调用该方法
+         */
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.e(TAG, "service disconnected");
