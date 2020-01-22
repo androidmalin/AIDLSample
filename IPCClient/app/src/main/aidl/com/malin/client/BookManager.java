@@ -26,6 +26,15 @@ public interface BookManager extends android.os.IInterface {
      * 它实现了IInterface接口，表明它具有远程Server承诺给Client的能力
      * Stub是一个抽象类，具体的IInterface的相关实现需要我们手动完成，这里使用了策略模式。
      */
+    /**
+     * 2、AIDL接口中肯定有一个静态实现类Stub
+     *
+     * 这个类必须实现Binder类，以及本身的AIDL接口类型。那么这个类就具备了Binder类中的四个功能：
+     * 1. 可以将Binder对象转化成AIDL对象，调用asInterface方法，可以看到这个方法其实和上面的asBinder方法对立的
+     * 2. 通信方法onTransact实现，这个方法是最核心的用于通信之间的逻辑实现
+     * 3. 通过queryLocalInterface方法可以根据类的描述符(字符串可以唯一标识这个远端服务的名称即可)获取到对应的AIDL对象(其实是IInterface类型的)
+     * 4. 在构造方法中必须调用Binder中的attachInterface方法把当前服务对象和描述符进行关联
+     */
     abstract class Stub extends android.os.Binder implements com.malin.client.BookManager {
         private static final String DESCRIPTOR = "com.malin.client.BookManager";
 
@@ -52,12 +61,12 @@ public interface BookManager extends android.os.IInterface {
          * 一般来说，如果是与一个远程Service对象进行通信，那么这里返回的一定是一个Binder代理对象，
          * 这个IBinder参数的实际上是BinderProxy
          */
-        public static com.malin.client.BookManager asInterface(android.os.IBinder iBinder) {
+        static com.malin.client.BookManager asInterface(android.os.IBinder iBinder) {
             if (iBinder == null) {
                 return null;
             }
             android.os.IInterface iin = iBinder.queryLocalInterface(DESCRIPTOR);
-            if (iin != null && iin instanceof BookManager) {
+            if (iin instanceof BookManager) {
                 return (com.malin.client.BookManager) iin;
             }
             return new com.malin.client.BookManager.Stub.Proxy(iBinder);
@@ -133,6 +142,7 @@ public interface BookManager extends android.os.IInterface {
                 return mRemote;
             }
 
+            @SuppressWarnings("unused")
             public String getInterfaceDescriptor() {
                 return DESCRIPTOR;
             }

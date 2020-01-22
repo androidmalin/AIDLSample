@@ -32,6 +32,7 @@ import java.util.List;
  * XXXNative/XXX$Stub是远端服务的中间者对象，主要用来处理应用发送过来的命令处理工作
  * XXXService是最终的服务逻辑实现方法的地方，运行在远端进程中
  * https://blog.csdn.net/jiangwei0910410003/article/details/52549333
+ * http://www.520monkey.com/archives/856
  */
 @SuppressLint("SetTextI18n")
 public class ClientActivity extends AppCompatActivity implements View.OnClickListener {
