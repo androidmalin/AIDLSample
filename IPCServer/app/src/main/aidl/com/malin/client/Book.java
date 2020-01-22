@@ -5,6 +5,20 @@ import android.os.Parcelable;
 
 public class Book implements Parcelable {
 
+    private String name;
+
+    private int price;
+
+
+    public Book() {
+    }
+
+    public Book(Parcel in) {
+        name = in.readString();
+        price = in.readInt();
+    }
+
+
     public String getName() {
         return name;
     }
@@ -21,17 +35,6 @@ public class Book implements Parcelable {
         this.price = price;
     }
 
-    private String name;
-
-    private int price;
-
-    public Book() {
-    }
-
-    public Book(Parcel in) {
-        name = in.readString();
-        price = in.readInt();
-    }
 
     public static final Creator<Book> CREATOR = new Creator<Book>() {
         @Override

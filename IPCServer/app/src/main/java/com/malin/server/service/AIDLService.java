@@ -33,10 +33,10 @@ public class AIDLService extends Service {
     public final String TAG = "AIDLService";
 
     //包含Book对象的list
-    private List<Book> mBooks = new ArrayList<>();
+    private volatile List<Book> mBooks = new ArrayList<>();
 
     //远端服务的具体实现.
-    //BookManager.Stub(抽象类,同时实现了AIDL接口)为远端服务的中间者.
+    //BookManager.Stub(抽象类,继承了Binder,同时实现了AIDL接口)为远端服务的中间者.
     //在服务端实现AIDL中定义的方法接口的具体逻辑，然后在客户端调用这些方法接口，从而达到跨进程通信的目的。
     //由AIDL文件生成的BookManager
     private final BookManager.Stub mBookManager = new BookManager.Stub() {
@@ -47,8 +47,9 @@ public class AIDLService extends Service {
                 Log.e(TAG, "invoking getBooks() method , now the list is : " + mBooks.toString());
                 if (mBooks != null) {
                     return mBooks;
+                } else {
+                    return new ArrayList<>();
                 }
-                return new ArrayList<>();
             }
         }
 

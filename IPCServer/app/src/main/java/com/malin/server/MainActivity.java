@@ -1,7 +1,8 @@
 package com.malin.server;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * https://blog.csdn.net/luoyanglizi/article/details/51980630
