@@ -8,12 +8,11 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
 
@@ -107,7 +106,7 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
      * 要想实现它，就必须重写两个回调方法：onServiceConnected()以及onServiceDisconnected()，
      * 而我们可以通过这两个回调方法得到服务端里面的IBinder对象，从而达到通信的目的
      */
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         /**
          * 系统会调用该方法以传递服务端的onBind() 方法返回的 IBinder。
