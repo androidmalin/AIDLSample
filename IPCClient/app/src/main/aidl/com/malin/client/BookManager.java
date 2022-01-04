@@ -143,7 +143,7 @@ public interface BookManager extends android.os.IInterface {
          */
         private static class Proxy implements com.malin.client.BookManager {
 
-            private android.os.IBinder mRemote;
+            private final android.os.IBinder mRemote;
 
             Proxy(android.os.IBinder remote) {
                 mRemote = remote;
@@ -211,8 +211,5 @@ public interface BookManager extends android.os.IInterface {
                 }
             }
         }
-
-
     }
-
 }
