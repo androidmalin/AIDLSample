@@ -35,6 +35,18 @@ public class AIDLService extends Service {
     //包含Book对象的list
     private volatile List<Book> mBooks = new ArrayList<>();
 
+    /**
+     * Binder的服务端
+     * 创建了一个Stub对象并在内部实现IBookManager的接口方法，
+     * 然后在Service的onBind中返回这个Stub对象。{@link AIDLService#onBind(Intent)}
+     * 因此，从这一点来看，我们完全可以把Stub类提取出来直接作为一个独立的Binder类来实现，
+     * 这样IBookManager中就只剩接口本身了，通过这种分离的方式可以让它的结构变得清晰点。
+     * <p>
+     * 摘录来自
+     * Android开发艺术探索
+     * 任玉刚
+     * 此材料可能受版权保护。
+     */
     //远端服务的具体实现.
     //BookManager.Stub(抽象类,继承了Binder,同时实现了AIDL接口)为远端服务的中间者.
     //在服务端实现AIDL中定义的方法接口的具体逻辑，然后在客户端调用这些方法接口，从而达到跨进程通信的目的。

@@ -1,2 +1,3 @@
 include ':client_app'
 include ':server_app'
+include ':binder_app'

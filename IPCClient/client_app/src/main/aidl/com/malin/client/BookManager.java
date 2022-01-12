@@ -36,6 +36,9 @@ public interface BookManager extends android.os.IInterface {
      * 4. 在构造方法中必须调用Binder中的attachInterface方法把当前服务对象和描述符进行关联
      */
     abstract class Stub extends android.os.Binder implements com.malin.client.BookManager {
+        /**
+         * Binder的唯一标识，一般用当前Binder的类名表示
+         */
         private static final String DESCRIPTOR = "com.malin.client.BookManager";
 
         static final int TRANSACTION_getBooks = android.os.IBinder.FIRST_CALL_TRANSACTION;
@@ -51,6 +54,11 @@ public interface BookManager extends android.os.IInterface {
         /**
          * Cast an IBinder object into an com.malin.client.BookManager interface,
          * generating a proxy if needed.
+         * <p>
+         * 用于将服务端的Binder对象转换成客户端所需的AIDL接口类型的对象，这种转换过程是区分进程的，
+         * 如果客户端和服务端位于同一进程，那么此方法返回的就是服务端的Stub对象本身，否则返回的是系统封装后的Stub.proxy对象。
+         * Android开发艺术探索
+         *
          * <p>
          * 试着查找Binder本地对象，如果找到，说明Client和Server都在同一个进程，
          * 这个参数直接就是本地对象，直接强制类型转换然后返回，
@@ -72,6 +80,9 @@ public interface BookManager extends android.os.IInterface {
             return new com.malin.client.BookManager.Stub.Proxy(iBinder);
         }
 
+        /**
+         * 此方法用于返回当前Binder对象。
+         */
         @Override
         public android.os.IBinder asBinder() {
             return this;
@@ -83,6 +94,16 @@ public interface BookManager extends android.os.IInterface {
          * 1，获取客户端传过来的数据，根据方法 ID 执行相应操作。
          * 2，将传过来的数据取出来，调用本地写好的对应方法。
          * 3，将需要回传的数据写入 reply 流，传回客户端。
+         * <p>
+         * Android开发艺术探索
+         * 这个方法运行在服务端中的Binder线程池中，当客户端发起跨进程请求时，
+         * 远程请求会通过系统底层封装后交由此方法来处理。
+         * 该方法的原型为public Boolean onTransact（int code,android.os.Parcel data,android.os.Parcel reply,int flags）。
+         * 服务端通过code可以确定客户端所请求的目标方法是什么，接着从data中取出目标方法所需的参数（如果目标方法有参数的话），然后执行目标方法。
+         * 当目标方法执行完毕后，就向reply中写入返回值（如果目标方法有返回值的话），onTransact方法的执行过程就是这样的。
+         * 需要注意的是，如果此方法返回false，那么客户端的请求会失败，
+         * 因此我们可以利用这个特性来做权限验证，毕竟我们也不希望随便一个进程都能远程调用我们的服务。
+         * <p>
          */
         @Override
         public boolean onTransact(int code, @NonNull android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
@@ -159,6 +180,18 @@ public interface BookManager extends android.os.IInterface {
                 return DESCRIPTOR;
             }
 
+            /**
+             * 这个方法运行在客户端，当客户端远程调用此方法时，
+             * 它的内部实现是这样的：
+             * 首先创建该方法所需要的输入型Parcel对象_data、输出型Parcel对象_reply和返回值对象List；
+             * 然后把该方法的参数信息写入_data中（如果有参数的话）；
+             * 接着调用transact方法来发起RPC（远程过程调用）请求，同时当前线程挂起；
+             * 然后服务端的onTransact方法会被调用，直到RPC过程返回后，当前线程继续执行，
+             * 并从_reply中取出RPC过程的返回结果；
+             * 最后返回_reply中的数据。
+             * <p>
+             * Android开发艺术探索
+             */
             @Override
             public List<Book> getBooks() throws android.os.RemoteException {
                 //很容易可以分析出来
@@ -185,6 +218,32 @@ public interface BookManager extends android.os.IInterface {
                 return _result;
             }
 
+            /**
+             * 这个方法运行在客户端，
+             * 它的执行过程和getBookList是一样的，addBook没有返回值，所以它不需要从_reply中取出返回值。
+             * 有两点还是需要额外说明一下：
+             * 首先，当客户端发起远程请求时，由于当前线程会被挂起直至服务端进程返回数据，
+             * 所以如果一个远程方法是很耗时的，那么不能在UI线程中发起此远程请求；
+             * 其次，由于服务端的Binder方法运行在Binder的线程池中，
+             * 所以Binder方法不管是否耗时都应该采用同步的方式去实现，因为它已经运行在一个线程中了。为了更好地说明Binder
+             * 了更好地说明Binder，下面给出一个Binder的工作机制图，如图binder_doc.png所示。
+             * <p>
+             * 从上述分析过程来看，我们完全可以不提供AIDL文件即可实现Binder，
+             * 之所以提供AIDL文件，是为了方便系统为我们生成代码。
+             * 系统根据AIDL文件生成Java文件的格式是固定的，
+             * 我们可以抛开AIDL文件直接写一个Binder出来，接下来我们就介绍如何手动写一个Binder。
+             * 还是上面的例子，但是这次我们不提供AIDL文件。
+             * 参考上面系统自动生成的BookManager.java这个类的代码，
+             * 可以发现这个类是相当有规律的，根据它的特点，我们完全可以自己写一个和它一模一样的类出来，
+             * 然后这个不借助AIDL文件的Binder就完成了。
+             * 但是我们发现系统生成的类看起来结构不清晰，我们想试着对它进行结构上的调整，
+             * 可以发现这个类主要由两部分组成，首先它本身是一个Binder的接口（继承了IInterface），
+             * 其次它的内部由个Stub类，这个类就是个Binder。还记得我们怎么写一个Binder的服务端吗？
+             * 代码如下所示。
+             *
+             * <p>
+             * Android开发艺术探索
+             */
             @Override
             public void addBook(com.malin.client.Book book) throws android.os.RemoteException {
                 android.os.Parcel _data = android.os.Parcel.obtain();

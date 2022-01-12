@@ -100,6 +100,16 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    private final IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+        @Override
+        public void binderDied() {
+            Log.d(TAG, "binder died. Thread name:" + Thread.currentThread().getName());
+            if (mBookManager == null) return;
+            mBookManager.asBinder().unlinkToDeath(mDeathRecipient, 0);
+            mBookManager = null;
+            // TODO:这里重新绑定远程Service
+        }
+    };
 
     /**
      * 这是实现客户端与服务端通信的一个关键类。
@@ -130,6 +140,11 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
             mBound = true;
             if (mBookManager == null) return;
             try {
+                // 在客户端绑定远程服务成功后，给binder设置死亡代理：
+                // 其中linkToDeath的第二个参数是个标记位，我们直接设为0即可
+                // 当Binder死亡的时候我们就可以收到通知了。另外，通过Binder的方法isBinderAlive也可以判断Binder是否死亡。
+                mBookManager.asBinder().linkToDeath(mDeathRecipient, 0);
+
                 //包含Book对象的list
                 List<Book> books = mBookManager.getBooks();
                 Log.e(TAG, books.toString());
