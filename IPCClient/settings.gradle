@@ -1,1 +1,2 @@
-include ':app'
+include ':client_app'
+include ':server_app'
